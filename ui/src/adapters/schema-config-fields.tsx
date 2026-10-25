@@ -513,6 +513,7 @@ export function SchemaConfigFields({
                     value={String(readValue(field) ?? "")}
                     onCommit={(v) => writeValue(field, v || undefined)}
                     immediate
+                    type={field.meta?.password ? "password" : undefined}
                     className={inputClass}
                   />
                 </Field>

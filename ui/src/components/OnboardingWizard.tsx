@@ -101,6 +101,7 @@ import {
 } from "../lib/model-utils";
 import { getUIAdapter } from "../adapters";
 import { listUIAdapters } from "../adapters";
+import { SchemaConfigFields } from "../adapters/schema-config-fields";
 import { isVisualAdapterChoice } from "../adapters/metadata";
 import { useDisabledAdaptersSync, useAdapterRegistryLoaded } from "../adapters/use-disabled-adapters";
 import { useAdapterCapabilities } from "../adapters/use-adapter-capabilities";
@@ -707,6 +708,7 @@ function OnboardingWizardInner({
    * `localStorage`, and a provider key does not belong there.
    */
   const [apiKey, setApiKey] = useState("");
+  const [adapterSchemaValues, setAdapterSchemaValues] = useState<Record<string, unknown>>({});
   // The owner's stored Claude subscription login, read right before the hire
   // (see handleGiveHeartbeat). Onboarding applies it with no extra control,
   // so nothing else reads this state yet.
@@ -2051,7 +2053,7 @@ function OnboardingWizardInner({
       ...defaultCreateValues,
       adapterType,
       runner,
-      ...(isCopilot ? { adapterSchemaValues: { provider: "acpx", acpxAgent: "copilot" } } : adapterType === "pi_local" ? { adapterSchemaValues: savedConfig } : {}),
+      ...(isCopilot ? { adapterSchemaValues: { provider: "acpx", acpxAgent: "copilot" } } : adapterType === "pi_local" ? { adapterSchemaValues: savedConfig } : { adapterSchemaValues }),
       resolvedRunner: setupRunner ?? resolvedRunner,
       model:
         adapterType === "gemini_local"
@@ -3157,10 +3159,24 @@ function OnboardingWizardInner({
                       </OnboardingLoginCard>
                     ) : credentialMode === "api" ? (
                       <OnboardingLoginCard
-                        instruction={hasGatewaySelection || connectionModels ? "Choose a model for your saved connection" : savedKeys.options.length ? "Choose a saved API key or enter a new one" : `Provide your ${
+                        instruction={adapterType === "lite_harness" ? "Configure your LiteLLM gateway" : hasGatewaySelection || connectionModels ? "Choose a model for your saved connection" : savedKeys.options.length ? "Choose a saved API key or enter a new one" : `Provide your ${
                           CONNECT_SOURCE_NAMES[adapterType] ?? adapterType
                         } API key to connect`}
                       >
+                        {adapterType === "lite_harness" ? (
+                          <SchemaConfigFields
+                            adapterType={adapterType}
+                            mode="create"
+                            isCreate
+                            values={{ ...defaultCreateValues, adapterType, adapterSchemaValues }}
+                            set={(patch) => setAdapterSchemaValues((prev) => ({ ...prev, ...(patch.adapterSchemaValues ?? {}) }))}
+                            config={{}}
+                            eff={(_group, _field, original) => original}
+                            mark={() => {}}
+                            models={[]}
+                          />
+                        ) : (
+                        <>
                         {!hasGatewaySelection && <SavedProviderKeySelect {...savedKeys} disabled={loading || adapterEnvLoading} value={selectedApiKey?.id ?? ""} onChange={(id) => {
                           setGatewayConnection(undefined);
                           if (connectionModels) setModel("");
@@ -3208,6 +3224,8 @@ function OnboardingWizardInner({
                           setSelectedSavedKey({ companyId: createdCompanyId!, envKey: apiKeyEnvKeyFor(adapterType), id: "" });
                           setModel("");
                         }}>Use a different API key</Button>}
+                        </>
+                        )}
                       </OnboardingLoginCard>
                     ) : connectStepNeedsLogin &&
                       createdCompanyId &&

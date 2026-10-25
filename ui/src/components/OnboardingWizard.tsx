@@ -733,7 +733,7 @@ function OnboardingWizardInner({
   const selectedApiKey = savedKeys.options.find((option) => option.id === selectedApiKeyId);
   const credentialMode = isCopilot ? "api" : credentialModeChoice ?? (
     (savedKeys.subscriptions.length > 0 || (adapterType === "claude_local" && savedKeys.storedLogin.data))
-      ? "subscription" : savedKeys.options.length || adapterType === "opencode_local" ? "api" : "subscription"
+      ? "subscription" : savedKeys.options.length || adapterType === "opencode_local" || adapterType === "lite_harness" ? "api" : "subscription"
   );
   const [createdCompanyPrefix, setCreatedCompanyPrefix] = useState<
     string | null
@@ -3032,7 +3032,7 @@ function OnboardingWizardInner({
                         id: opt.type,
                         label: opt.type === "paperclip_runner" ? "GitHub Copilot" : CONNECT_SOURCE_NAMES[opt.type] ?? opt.label,
                         icon: <ModelSourceMark type={opt.type} Fallback={opt.icon} />,
-                        ...(opt.type === "paperclip_runner" ? { credentialMode: "api" as const } : {}),
+                        ...(opt.type === "paperclip_runner" || opt.type === "lite_harness" ? { credentialMode: "api" as const } : {}),
                       }))}
                       mode={credentialMode}
                       selectedId={

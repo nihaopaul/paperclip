@@ -1603,7 +1603,13 @@ function OnboardingWizardInner({
                 label: "Connect",
                 icon: "arrow",
                 disabled:
-                  !connectStepReady || (!isCopilot && credentialMode === "api" && !apiKey.trim() && !selectedApiKey && !restoredApiCredential && !managedBindingForStep()),
+                  !connectStepReady || (
+                    !isCopilot && credentialMode === "api" &&
+                    (adapterType === "lite_harness"
+                      ? !(typeof adapterSchemaValues.apiKey === "string" && adapterSchemaValues.apiKey.trim())
+                      : !apiKey.trim())
+                    && !selectedApiKey && !restoredApiCredential && !managedBindingForStep()
+                  ),
               }
           : // Nothing is chosen on arrival, and the row is what chooses. Until
             // it has been answered the button has nothing to do.

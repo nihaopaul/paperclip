@@ -82,6 +82,12 @@ const adapterDisplayMap: Record<string, AdapterDisplayInfo> = {
     icon: Code,
     recommended: true,
   },
+  lite_harness: {
+    label: "Lite-Harness",
+    description: "LiteLLM gateway via the Lite-Harness SDK",
+    icon: Bot,
+    recommended: true,
+  },
   paperclip_runner: {
     label: "Paperclip Runner",
     description: "Experimental Rust runner with a Codex provider",
